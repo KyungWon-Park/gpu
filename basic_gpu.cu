@@ -404,7 +404,7 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 
 	// WARNING: MALLOC 1
 	__gpu_map__ *tmp_map = (__gpu_map__ *) malloc(sizeof(__gpu_map__));
-	__gpu_map_spill__ *tmp_map_spill = (__gpu_map_spill__) malloc(sizeof(__gpu_map_spill__));
+	__gpu_map_spill__ *tmp_map_spill = (__gpu_map_spill__ *) malloc(sizeof(__gpu_map_spill__));
 	assert(tmp_map != NULL && "MALLOC FAILED!\n");
 	assert(tmp_map_spill != NULL && "MALLOC FAILED!\n");
 
@@ -450,7 +450,6 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	free(tmp_map_spill);
 
 	// ENTERING MAIN LOOP
-	int step = 0;
 	dim3 block;
 	dim3 thread;
 	for (int step = 0; (step * BATCH_SIZE) < d_NUM_TEST; step++)
