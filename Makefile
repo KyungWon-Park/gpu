@@ -24,4 +24,4 @@ gpu: cuda_code.o
 	gcc $(commons) main_gpu.c -std=c11 -lm -lcuda -lcudart -O3 -o cnn_gpu_basic.out 
 
 cuda_code.o:
-	nvcc -C basic_gpu.cu -DBASIC -O3 -o cuda_code.o 
+	nvcc -c basic_gpu.cu -DBASIC -O3 -o cuda_code.o 
