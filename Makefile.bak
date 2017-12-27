@@ -3,7 +3,7 @@ commons = parser.c
 gpu = --compiler-options='-std=c11 -O3'
 
 clean:
-	rm *.out *.o
+	rm *.out 
 
 test1:
 	gcc $(commons) unitTest_parser.c -o test_parser.out 
@@ -20,8 +20,5 @@ cpu_debug:
 cpu_debug_exe:
 	gcc $(commons)  main_cpu.c -lm -g -o cnn_cpu_db_exe.out 
 
-gpu: cuda_code.o
-	gcc $(commons) main_gpu.c -std=c11 -lm -lcuda -lcudart -O3 -o cnn_gpu_basic.out 
-
-cuda_code.o:
-	nvcc -C basic_gpu.cu -DBASIC -O3 -o cuda_code.o 
+gpu:
+	nvcc $(commons) $(gpu) main_gpu.c basic_gpu.cu -DBASIC-lm -O3 -o cnn_gpu_basic.out 
