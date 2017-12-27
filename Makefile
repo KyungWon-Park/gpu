@@ -21,7 +21,7 @@ cpu_debug_exe:
 	gcc $(commons)  main_cpu.c -lm -g -o cnn_cpu_db_exe.out 
 
 gpu: cuda_code.o
-	gcc $(commons) main_gpu.c -std=c11 -lm -lcuda -O3 -o cnn_gpu_basic.out 
+	gcc $(commons) main_gpu.c -std=c11 -DBASIC -lm -lcuda -O3 -o cnn_gpu_basic.out 
 
 cuda_code.o:
-	nvcc -c basic_gpu.cu -DBASIC -O3 -o cuda_code.o 
+	nvcc -c basic_gpu.cu -O3 -o cuda_code.o 
