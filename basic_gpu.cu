@@ -388,7 +388,7 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	// Acquire memory space in GPU 
 	// Prefix "d_" means ADDRESS in device memory 
 	// Handlers for device memory manipulation
-	int *inferences = malloc(sizeof(int) * NUM_TEST);
+	int *inferences = (int *) malloc(sizeof(int) * NUM_TEST);
 	int *d_inferences;
 
 	float *d_test_data;
@@ -403,8 +403,8 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	float *d_output_results;
 
 	// WARNING: MALLOC 1
-	__gpu_map__ *tmp_map = malloc(sizeof(__gpu_map__));
-	__gpu_map_spill__ *tmp_map_spill = malloc(sizeof(__gpu_map_spill__));
+	__gpu_map__ *tmp_map = (__gpu_map__ *) malloc(sizeof(__gpu_map__));
+	__gpu_map_spill__ *tmp_map_spill = (__gpu_map_spill__) malloc(sizeof(__gpu_map_spill__));
 	assert(tmp_map != NULL && "MALLOC FAILED!\n");
 	assert(tmp_map_spill != NULL && "MALLOC FAILED!\n");
 
@@ -516,7 +516,7 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 		thread.x = 84;
 		thread.y = 1;
 		thread.z = 1;
-		output_kernel<<<block, kernel>>>(step, 7, 84, 10, d_map_spill, d_f6_results, d_output_results);
+		output_kernel<<<block, thread>>>(step, 7, 84, 10, d_map_spill, d_f6_results, d_output_results);
 	}
 
 	// 7. Determine numbers
