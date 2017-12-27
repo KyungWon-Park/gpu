@@ -64,8 +64,8 @@
  *
  */
 
-__constant__ int D_BATCH_SIZE;
-__constant__ int D_NUM_TEST;
+__constant__ int D_BATCH_SIZE = BATCH_SIZE;
+__constant__ int D_NUM_TEST = NUM_TEST;
 __constant__ __gpu_map__ d_map;
 
 __device__ float sigmoid(float x)
@@ -440,9 +440,9 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	cudaMalloc((void **) &d_output_results, sizeof(float) * NUM_TEST * 10);
 
 	// CUDA memcpy from host to device 
-	cudaMemcpyToSymbol((void *) D_NUM_TEST, (void *) &d_NUM_TEST, sizeof(int), 0, cudaMemcpyHostToDevice);
-	cudaMemcpyToSymbol((void *) D_BATCH_SIZE, (void *) &batch_size, sizeof(int), 0, cudaMemcpyHostToDevice);
-	cudaMemcpyToSymbol((void *) d_map, (void *) tmp_map, sizeof(__gpu_map__), 0, cudaMemcpyHostToDevice);
+	//cudaMemcpyToSymbol(D_NUM_TEST, &d_NUM_TEST, sizeof(int), 0, cudaMemcpyHostToDevice);
+	//cudaMemcpyToSymbol(D_BATCH_SIZE, &batch_size, sizeof(int), 0, cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol(d_map, tmp_map, sizeof(__gpu_map__), 0, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_map_spill, tmp_map_spill, sizeof(__gpu_map_spill__), cudaMemcpyHostToDevice);
 
 	// WARNING: FREE 1
@@ -507,7 +507,7 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 		thread.x = 120;
 		thread.y = 1;
 		thread.z = 1;
-		fullyConnect_kernel<<<block, kernel>>>(step, 6, 120, 84, d_map_spill, d_f5_results, d_f6_results);
+		fullyConnect_kernel<<<block, thread>>>(step, 6, 120, 84, d_map_spill, d_f5_results, d_f6_results);
 
 		// 6. Output layer OUTPUT 
 		block.x = 1;
