@@ -11,8 +11,7 @@
    *
    * Why use BATCH_SIZE ? (Multiple images at once)
    *
-   * 0. Saturate Streaming Multiprocessors with enough computaion BLOCKS
-   * 1. Saturate Video RAM with enough computaional jobs
+   * To saturate Streaming Multiprocessors with enough computaion BLOCKS
    * 
    * CRITERIA:
    * 	- Deploy enough blocks (More than n * SM counts) for latency hiding
@@ -43,7 +42,7 @@
    * SHARED MEMORY SPEC:
    * 	- 64 kB per SM 
    * 	- Composed of 32 memory bank hardwares
-   * 	- Does bank interleaving per every word (4 Bytes)
+   * 	- Does bank interleaving every word (4 Bytes)
    *
    */
 
@@ -104,6 +103,7 @@ convolution_kernel(
 	int TID_y = threadIdx.y; 	// foreach: output image column 	~28 or ~10
 
 	float acc = 0;
+	// For every kernel launch, all threads of the warp are on the one side of branch
 	if (stage == 1)
 	{// C1_layer convolution: D_BATCH_SIZE * { [1 @ 32 * 32] .X [6 * 1 @ 5 * 5] => [6 @ 28 * 28] }
 		// Get the starting point from entire MNIST data set 
@@ -308,7 +308,7 @@ output_kernel(
 	// OUTPUT_layer: D_BATCH_SIZE * { [10 * 84] X [84 * 1] + [10 * 1] => [10 * 1] }
 	// Get index info 
 	int BID_y = blockIdx.y; 	// foreach: BATCH among curr_step_inputs[BATCH_SIZE] 
-	int TID_x = threadIdx.x; 	// foreach: elements in a row 
+	int TID_x = threadIdx.x; 	// foreach: elements in a row  (84)
 	
 	// Load data into shared memory 
 	__shared__ float OUTPUT_param[10][84];
@@ -440,8 +440,6 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	cudaMalloc((void **) &d_output_results, sizeof(float) * NUM_TEST * 10);
 
 	// CUDA memcpy from host to device 
-	//cudaMemcpyToSymbol(D_NUM_TEST, &d_NUM_TEST, sizeof(int), 0, cudaMemcpyHostToDevice);
-	//cudaMemcpyToSymbol(D_BATCH_SIZE, &batch_size, sizeof(int), 0, cudaMemcpyHostToDevice);
 	cudaMemcpyToSymbol(d_map, tmp_map, sizeof(__gpu_map__), 0, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_map_spill, tmp_map_spill, sizeof(__gpu_map_spill__), cudaMemcpyHostToDevice);
 
@@ -449,11 +447,11 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	free(tmp_map);
 	free(tmp_map_spill);
 
-	// ENTERING MAIN LOOP
+	// ENTERING MAIN_LOOP
 	dim3 block;
 	dim3 thread;
 	for (int step = 0; (step * BATCH_SIZE) < d_NUM_TEST; step++)
-	{// Advance step by step, with BATCH_SIZE stride 
+	{// Advance step by step, with BATCH_SIZE stride (Processing forward chain for "BATCH_SIZE" number of MNIST images)
 		// 0. Convolution layer C1 
 		block.x = 6;
 		block.y = BATCH_SIZE;

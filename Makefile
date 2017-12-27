@@ -1,7 +1,5 @@
 commons = parser.c
 
-gpu = --compiler-options='-std=c11 -O3'
-
 clean:
 	rm *.out *.o
 
