@@ -203,7 +203,7 @@ pooling_kernel(
 		 	}
 	 	}
 	 
-	 	output[(BID_y * 6 * 14 * 14) + (BID_x * 14 * 14) + (TID_x * 14) + TID_y] = sigmoid(acc + d_map.C1_bias[BID_x]);
+	 	outputs[(BID_y * 6 * 14 * 14) + (BID_x * 14 * 14) + (TID_x * 14) + TID_y] = sigmoid(acc + d_map.C1_bias[BID_x]);
 	}
 	else // Desired stage = 4
 	{// S4_layer pooling: D_BATCH_SIZE * { Sigmoid([16 @ 10 * 10] + bias[16]) => [16 @ 5 * 5] }
@@ -217,7 +217,7 @@ pooling_kernel(
 			}
 		}
 
-		output[(BID_y * 16 * 5 * 5) + (BID_x * 5 * 5) + (TID_x * 5) + TID_y] = sigmoid(acc + d_map.C3_bias[BID_x]); 
+		outputs[(BID_y * 16 * 5 * 5) + (BID_x * 5 * 5) + (TID_x * 5) + TID_y] = sigmoid(acc + d_map.C3_bias[BID_x]); 
 	}
 	return;
 }
@@ -290,7 +290,7 @@ fullyConnect_kernel(
 				{
 					prod_sum += prod_elementwise[j];
 				}
-				outputs[(BID_y * 84) + (BID_x * (84 / 4)) + i] = sigmoid(prod_sum + d_map.F6_bias[(BID_x * (84 / 4)) + i];
+				outputs[(BID_y * 84) + (BID_x * (84 / 4)) + i] = sigmoid(prod_sum + d_map.F6_bias[(BID_x * (84 / 4)) + i]);
 			}
 		}
 	}
@@ -316,7 +316,7 @@ output_kernel(
 	{
 		for (int i = 0; i < 10; i++)
 		{
-			for (int j = 0; j < 4; k++)
+			for (int j = 0; j < 4; j++)
 			{
 				OUTPUT_param[i][(j * 21) + TID_x] = d_map.OUTPUT_param[i][(j * 21) + TID_x];
 			}
@@ -440,9 +440,9 @@ void forward_GPU(float **ptr_test_data, int **ptr_test_label, __map__ *map, int 
 	cudaMalloc((void **) &d_output_results, sizeof(float) * NUM_TEST * 10);
 
 	// CUDA memcpy from host to device 
-	cudaMemcpyToSymbol(D_NUM_TEST, &d_NUM_TEST, sizeof(int), 0, cudaMemcpyHostToDevice);
-	cudaMemcpyToSymbol(D_BATCH_SIZE, &batch_size, sizeof(int), 0, cudaMemcpyHostToDevice);
-	cudaMemcpyToSymbol(d_map, tmp_map, sizeof(__gpu_map__), 0, cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol((void *) D_NUM_TEST, (void *) &d_NUM_TEST, sizeof(int), 0, cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol((void *) D_BATCH_SIZE, (void *) &batch_size, sizeof(int), 0, cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol((void *) d_map, (void *) tmp_map, sizeof(__gpu_map__), 0, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_map_spill, tmp_map_spill, sizeof(__gpu_map_spill__), cudaMemcpyHostToDevice);
 
 	// WARNING: FREE 1
